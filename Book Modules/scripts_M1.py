@@ -32,7 +32,3 @@ def download_Washington_DC_Image():
         
         # Delete the zip file
         os.remove(fnameZip)
-    
-    
-    
-    
