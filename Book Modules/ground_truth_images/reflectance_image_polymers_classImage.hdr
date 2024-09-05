@@ -1,0 +1,73 @@
+ENVI
+description = {
+  Display Output to Image [Thu Sep 05 11:30:12 2024]}
+samples = 384
+lines   = 852
+bands   = 3
+header offset = 0
+file type = ENVI Standard
+data type = 1
+interleave = bsq
+sensor type = Unknown
+byte order = 0
+x start = 0
+y start = 0
+wavelength units = Unknown
+default stretch = 0.000000 255.000000 linear
+band names = {
+ R (Band 77:reflectance_image_polymers), 
+ G (Band 50:reflectance_image_polymers), 
+ B (Band 23:reflectance_image_polymers)}
+acquisition date = DATE(yyyy-mm-dd): 2018-07-19
+start time = UTC TIME: 16:53:11
+stop time = UTC TIME: 16:53:29
+errors = none
+himg = {
+ 1, 384}
+vimg = {
+ 1, 453}
+hroi = {
+ 1, 384}
+vroi = {
+ 1, 453}
+fps = 50.00
+fps_qpf = 49.80
+tint1 = 11.300000
+binning = {
+ 4, 2}
+trigger mode1 = External
+himg1 = {
+ 1, 384}
+vimg1 = {
+ 1, 176}
+fodis = {
+ 0, 0}
+sensorid = 350018
+acquisitionwindow1 left = 626
+acquisitionwindow1 top = 656
+pixelmatching left = 1
+pixelmatching top = 0
+pixelmatching width = 768
+pixelmatching height = 704
+fps2 = 50.00
+tint2 = 1.799600
+binning2 = {
+ 1, 1}
+trigger mode2 = External
+himg2 = {
+ 1, 384}
+vimg2 = {
+ 177, 453}
+fodis2 = {
+ 0, 0}
+sensorid2 = 350018
+acquisitionwindow2 left = 0
+acquisitionwindow2 top = 8
+calibration pack = C:/Users/Public/Documents/Specim/FENIX350018_20180323.scp
+swir temperature = 154.00
+scb temperature channel1 = 27.34
+scb temperature channel2 = 21.74
+scb temperature channel3 = 25.02
+scb temperature channel4 = 22.25
+temperature = {
+ 154.00, 27.34, 21.74, 25.02, 22.25}
