@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
     
-def display_RGB(imArr, wl, rotate=False):
+def display_RGB(imArr, wl, stretch_pct=[2,98], rotate=False):
     
     # determine the indices for the red, green, and blue bands
     red_band_idx = np.argmin(np.abs(wl-640))
@@ -19,9 +19,9 @@ def display_RGB(imArr, wl, rotate=False):
         # This is not the most computationally efficient method, but simplifies the code.
         single_band = imRGB_clipped[:,:,i]
         # Clip the band
-        lower_thresh = np.percentile(single_band.flatten(), 2)
+        lower_thresh = np.percentile(single_band.flatten(), stretch_pct[0])
         single_band[single_band < lower_thresh] = lower_thresh
-        upper_thresh = np.percentile(single_band.flatten(), 98)
+        upper_thresh = np.percentile(single_band.flatten(), stretch_pct[1])
         single_band[single_band > upper_thresh] = upper_thresh
         # Rescale to [0,1].
         single_band = single_band - lower_thresh
