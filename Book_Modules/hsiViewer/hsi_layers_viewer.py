@@ -6,13 +6,28 @@ import pyqtgraph as pg
 import numpy as np
 import pyqtgraph as pg
 import spectral
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from matplotlib import cm
 
+class MplColorHelper:
+  def __init__(self, cmap_name, start_val, stop_val):
+    self.cmap_name = cmap_name
+    self.cmap = plt.get_cmap(cmap_name)
+    self.norm = mpl.colors.Normalize(vmin=start_val, vmax=stop_val)
+    self.scalarMap = cm.ScalarMappable(norm=self.norm, cmap=self.cmap)
+  def get_rgb(self, val):
+    return self.scalarMap.to_rgba(val)
 
-       
 
 class viewer(QMainWindow):
-    def __init__(self, im, layers = {}):
-        super().__init__()   
+    def __init__(self, im, layers={}): 
+        # initiating GUI functions 
+        window = pg.plot()      
+        window.setWindowTitle('Initiating GUI') 
+        window.close()         
+        super().__init__()
+        # initiate variables
         self.wl = np.asarray(im.bands.centers)
         self.imArr = im.Arr  
         self.layers = layers
@@ -36,7 +51,7 @@ class viewer(QMainWindow):
         self.layout_top_menu.addStretch(1)
         self.layout_top_menu.addWidget(self.buttonViewBands)
         # Create a layout withe the buttons layout with image layout below
-        self.layout_main = QVBoxLayout(self)
+        self.layout_main = QVBoxLayout()
         self.layout_main.addLayout(self.layout_top_menu)
         self.layout_main.addWidget(self.imv)
         self.central_widget.setLayout(self.layout_main)
@@ -65,43 +80,54 @@ class viewer(QMainWindow):
     def setLayerButtons(self):        
         self.buttonViewBands = QPushButton('Scroll Bands', self)
         self.buttonViewBands.setMaximumWidth(100)
-        self.buttonViewBands.clicked.connect(self.onViewBandsClick)
-        self.buttonAnomalyDetection = QPushButton('Anomaly Detection', self)
-        self.buttonAnomalyDetection.setMaximumWidth(100)
-        self.buttonAnomalyDetection.clicked.connect(self.onButtonAnomalyDetectionClick)
-        self.buttonTargetDetection = QPushButton('Target Detection', self)
-        self.buttonTargetDetection.setMaximumWidth(100)
-        self.buttonTargetDetection.clicked.connect(self.onButtonTargetDetectionClick)
-        self.buttonLDA = QPushButton('Classification: LDA', self)
-        self.buttonLDA.setMaximumWidth(100)
-        self.buttonLDA.clicked.connect(self.onButtonLDAClick)
+        self.buttonViewBands.clicked.connect(self.onViewBandsClick)             
         # Create a layout area at the top of the central_widget for the buttons
-        self.layout_top_menu = QHBoxLayout(self)
-        self.layout_top_menu.addWidget(self.buttonAnomalyDetection)
-        self.layout_top_menu.addWidget(self.buttonTargetDetection)
-        self.layout_top_menu.addWidget(self.buttonLDA)
-        
-    
+        self.layout_top_menu = QHBoxLayout()     
+        button = QPushButton('RGB Image', self)
+        button.setMaximumWidth(100)
+        button.clicked.connect(self.onButtonAddRGBimClick)
+        self.layout_top_menu.addWidget(button)
+        # add a button to add each layer in the dictionary 
+        for layer_key in self.layers.keys():
+            button = QPushButton(layer_key, self)
+            button.setMaximumWidth(100)
+            button.clicked.connect(self.onButtonAddLayerClick)  
+            self.layout_top_menu.addWidget(button)
+            
     def onViewBandsClick(self):
         self.scrollBandArr = np.swapaxes(np.swapaxes(self.imArr, 0, 2), 1, 2)
-        self.imv.setImage(self.scrollBandArr, autoRange=False)
-        print('View Bands Button clicked')  
-
-    def onButtonAnomalyDetectionClick(self):
-        self.imv.setImage(self.imRGB[:,:,1], autoRange=False)
-        print('Anomaly Detection Button clicked')        
-
-    def onButtonTargetDetectionClick(self):
+        self.imv.setImage(self.scrollBandArr, autoRange=True)
+        
+    def onButtonAddRGBimClick(self):
         self.imv.setImage(self.imRGB, autoRange=False)
-        print('Target Detection Button clicked')
-    
-    def onButtonLDAClick(self):
-        self.imv.setImage(self.imRGB[:,:,0], autoRange=False)
-        print('LDA Button clicked')
+
+    def onButtonAddLayerClick(self):
+        sending_button = self.sender()
+        layer_name = str(sending_button.text())
+        if isinstance(self.layers[layer_name], list):
+            if len(self.layers[layer_name])==1:
+                layer_im = np.squeeze(self.layers[layer_name])
+                cmap = 'jet'
+            else:
+                layer_im = np.squeeze(self.layers[layer_name][0])
+                cmap = self.layers[layer_name][1]
+        else:
+            layer_im = np.squeeze(self.layers[layer_name])
+            cmap = 'jet'
+        if len(layer_im.shape) == 2:
+            layer_im = self.create_layer_RGB_image(layer_im, cmap)
+        self.imv.setImage(layer_im, autoRange=False)
+        
+    def create_layer_RGB_image(self, layer_im, cmap):
+        nRows,nCols = layer_im.shape
+        layer_im_rgb = np.zeros((nRows,nCols,4))
+        colorMaker = MplColorHelper(cmap, np.min(layer_im), np.max(layer_im))
+        for val in np.unique(layer_im):
+            layer_im_rgb[layer_im==val] = colorMaker.get_rgb(val)
+        return layer_im_rgb        
         
     def show_RGB(self):       
-        # create and show an RGB image in the viewer
-         
+        # create and show an RGB image in the viewer         
         # determine the indices for the red, green, and blue bands
         self.index_red_band = np.argmin(np.abs(self.wl-650))
         self.index_green_band = np.argmin(np.abs(self.wl-550))
@@ -112,7 +138,7 @@ class viewer(QMainWindow):
         self.imRGB[:,:,1] = np.squeeze(self.imArr[:,:,self.index_green_band])
         self.imRGB[:,:,2] = np.squeeze(self.imArr[:,:,self.index_blue_band])
         # Set the numpy RGB image in the viewer
-        self.imv = pg.image(self.imRGB)
+        self.imv = pg.image(self.imRGB, autoRange=True)
 
     def click(self, event):    
         # plot the spectrum for the clicked pixel location
@@ -150,4 +176,5 @@ class viewer(QMainWindow):
             h = self.specPlot.geometry().height()
             self.specPlot.setGeometry(int(0.5*x), 2*y, 2*w, h)
             self.specPlot.addLegend()
-
+            
+            

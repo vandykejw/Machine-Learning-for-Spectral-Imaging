@@ -1,14 +1,7 @@
-
-Book Modules/__pycache__/scripts.cpython-311.pyc
-Book Modules/spectral_images/WashingtonDC_Ref_156bands/WashingtonDC_Ref_156bands
-Book Modules/spectral_images/WashingtonDC_Ref_156bands/WashingtonDC_Ref_156bands.hdr
-Book Modules/WashingtonDC_Ref_156bands
-Book Modules/WashingtonDC_Ref_156bands.hdr
-Book Modules/__pycache__/scripts.cpython-311.pyc
-Book Modules/WashingtonDC_Ref_156bands
-Book Modules/WashingtonDC_Ref_156bands.hdr
-Book Modules/WashingtonDC_Ref_156bands
-Book Modules/WashingtonDC_Ref_156bands.hdr
+Book_Modules/__pycache__/scripts.cpython-311.pyc
+Book_Modules/__pycache__/scripts.cpython-311.pyc
+HW_Solutions/
 *.pyc
-/Book Modules/spectral_images
-/Book Modules/.venv
+Book_Modules/spectral_images/
+Book_Modules/.venv/
+Book_Modules/__pycache__/

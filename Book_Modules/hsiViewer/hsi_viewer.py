@@ -1,6 +1,7 @@
 import PyQt5
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
 import pyqtgraph as pg
 import numpy as np
 import spectral
@@ -75,4 +76,5 @@ class viewer(QMainWindow):
             h = self.specPlot.geometry().height()
             self.specPlot.setGeometry(int(0.5*x), y, 2*w, h)
             self.specPlot.addLegend()
-
+            
+            
