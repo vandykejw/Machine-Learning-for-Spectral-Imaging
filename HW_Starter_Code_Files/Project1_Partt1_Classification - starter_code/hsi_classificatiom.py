@@ -15,33 +15,26 @@ class GaussianClassification():
         
         
     def load_gt(self, fname, verbose=False):
-        # load the associated ground truth and create the ground truth image
         if verbose: 
             print('Loading groundtruth...')
-            start_time = time.time()
-        
+            start_time = time.time()        
         print('Reading data code goes here.')
-        
         if verbose: 
             print(f'Total time: {(time.time()-start_time):.2f} seconds')
     
     def train(self, tol=10**(-8), verbose=False):
         if verbose: 
             print('Training...')
-            start_time = time.time()
-        
-        print('Training code goes here.')
-        
+            start_time = time.time()        
+        print('Training code goes here.')        
         if verbose: 
             print(f'Total time: {(time.time()-start_time):.2f} seconds')
         
     def predict(self, verbose=False):
         if verbose: 
             print('Predicting...')
-            start_time = time.time()
-        
-        print('Predicting code goes here.')
-        
+            start_time = time.time()        
+        print('Predicting code goes here.')        
         if verbose: 
             print(f'Total time: {(time.time()-start_time):.2f} seconds')
 
