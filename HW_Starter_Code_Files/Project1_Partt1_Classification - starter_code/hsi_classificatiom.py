@@ -71,7 +71,7 @@ class GaussianClassification():
         plt.title('LDA Class Predictio n Image')
     
     def plt_class_means(self):
-        plt.figure(figsize=(12,4))
+        plt.figure(figsize=(12,8))
         for i in range(self.nClasses):
             plt.plot(self.wl, self.class_means[i,:], label=self.class_names[i])
         plt.grid(True)
