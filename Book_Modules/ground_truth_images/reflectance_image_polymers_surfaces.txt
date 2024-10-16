@@ -38,7 +38,7 @@
 ; ROI rgb value: {160, 32, 240}
 ; ROI npts: 5503
 ;
-; ROI name: gloave
+; ROI name: glove
 ; ROI rgb value: {255, 127, 80}
 ; ROI npts: 2759
 ;
