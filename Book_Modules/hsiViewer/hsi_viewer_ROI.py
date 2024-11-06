@@ -18,13 +18,14 @@ simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
 
         
 class viewer(QMainWindow):
-    def __init__(self, im):
+    def __init__(self, im, stretch=[2,98]):
         # initiating GUI functions 
         window = pg.plot()      
         window.setWindowTitle('Initiating GUI') 
         window.close()         
         super().__init__()
-        # set image data and metadata
+        # set image data and metadata 
+        self.stretch = stretch
         self.wl = np.asarray(im.bands.centers)
         self.imArr = im.Arr 
         self.nrows = im.Arr.shape[0]
@@ -170,7 +171,7 @@ class viewer(QMainWindow):
             self.h = 1200
             self.w = aspect_ratio*self.h
             
-    def show_RGB(self):       
+    def show_RGB(self):              
         # create and show an RGB image in the viewer
          
         # determine the indices for the red, green, and blue bands
@@ -180,14 +181,19 @@ class viewer(QMainWindow):
               
         # Create a numpy array for the RGB image with shape (nrows, ncols, 3)
         self.imRGB =np.zeros((self.nrows,self.ncols,3))
-        self.imRGB[:,:,0] = np.squeeze(self.imArr[:,:,self.index_red_band])
-        self.imRGB[:,:,1] = np.squeeze(self.imArr[:,:,self.index_green_band])
-        self.imRGB[:,:,2] = np.squeeze(self.imArr[:,:,self.index_blue_band])
+        self.imRGB[:,:,0] = self.stretch_arr(np.squeeze(self.imArr[:,:,self.index_red_band]))
+        self.imRGB[:,:,1] = self.stretch_arr(np.squeeze(self.imArr[:,:,self.index_green_band]))
+        self.imRGB[:,:,2] = self.stretch_arr( np.squeeze(self.imArr[:,:,self.index_blue_band]))
         self.imROI = copy.deepcopy(self.imRGB)
         self.imv = pg.image(self.imRGB)
         self.imv.ui.roiBtn.hide()
         self.imv.ui.menuBtn.hide()
-        self.imv.setGeometry(100, 100, self.nrows, self.ncols) 
+        #self.imv.setGeometry(100, 100, self.nrows, self.ncols) 
+    
+    def stretch_arr(self, arr):
+        low_thresh_val = np.percentile(arr, self.stretch[0])
+        high_thresh_val = np.percentile(arr, self.stretch[1])
+        return np.clip(arr, a_min=low_thresh_val, a_max=high_thresh_val)
     
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Delete:

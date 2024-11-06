@@ -9,7 +9,8 @@ import spectral
 
 
 class viewer(QMainWindow):
-    def __init__(self, im):
+    def __init__(self, im, stretch=[2,98]): 
+        self.stretch = stretch
         self.wl = np.asarray(im.bands.centers)
         self.imArr = im.Arr  
         self.nrows = im.Arr.shape[0]
@@ -34,11 +35,17 @@ class viewer(QMainWindow):
               
         # Create a numpy array for the RGB image with shape (nrows, ncols, 3)
         self.imRGB =np.zeros((self.nrows,self.ncols,3))
-        self.imRGB[:,:,0] = np.squeeze(self.imArr[:,:,self.index_red_band])
-        self.imRGB[:,:,1] = np.squeeze(self.imArr[:,:,self.index_green_band])
-        self.imRGB[:,:,2] = np.squeeze(self.imArr[:,:,self.index_blue_band])
+        self.imRGB[:,:,0] = self.stretch_arr(np.squeeze(self.imArr[:,:,self.index_red_band]))
+        self.imRGB[:,:,1] = self.stretch_arr(np.squeeze(self.imArr[:,:,self.index_green_band]))
+        self.imRGB[:,:,2] = self.stretch_arr( np.squeeze(self.imArr[:,:,self.index_blue_band]))
         self.imv = pg.image(self.imRGB)
-        self.imv.setGeometry(100, 100, self.nrows, self.ncols) 
+        #self.imv.setGeometry(100, 100, self.nrows, self.ncols) 
+    
+    def stretch_arr(self, arr):
+        low_thresh_val = np.percentile(arr, self.stretch[0])
+        high_thresh_val = np.percentile(arr, self.stretch[1])
+        return np.clip(arr, a_min=low_thresh_val, a_max=high_thresh_val)
+        
 
     def click(self, event):    
         # plot the spectrum for the clicked pixel location
