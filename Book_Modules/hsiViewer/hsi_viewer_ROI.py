@@ -18,14 +18,14 @@ import copy
 simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
 
 class ROIs_class:
-  def __init__(self, names, color, mask, df):
+  def __init__(self, names, colors, masks, df):
     self.names = names # names (list) of the ROIs, from first column of table
-    self.color = color # colors (dict) for the ROIs, from second column of table
-    self.mask = mask # mask (dict) - array to True (in ROI) False (not in ROI) with the spatial dimensions of the image, 
+    self.colors = colors # colors (dict) for the ROIs, from second column of table
+    self.masks = masks # mask (dict) - array to True (in ROI) False (not in ROI) with the spatial dimensions of the image, 
     self.df = df # dataframe of pixel locations, names, colors, and spectra for the ROIs
         
 class viewer(QMainWindow):
-    def __init__(self, im, stretch=[2,98], rotate=False):
+    def __init__(self, im, stretch=[2,98], rotate=False, roi_fname=None):
         # initiating GUI functions 
         window = pg.plot()      
         window.setWindowTitle('Initiating GUI') 
@@ -34,12 +34,31 @@ class viewer(QMainWindow):
         # set image data and metadata 
         self.hasStats = False
         self.stretch = stretch
-        self.wl = np.asarray(im.bands.centers)
         self.rotate = rotate
-        if self.rotate:
-            self.imArr = np.flip(np.rot90(im.Arr, axes=(0,1)), axis=0)
-        else:
-            self.imArr = im.Arr 
+        self.roi_fname = roi_fname
+        try:
+            # if im is from an envi image with bands
+            self.wl = np.asarray(im.bands.centers)
+            if self.rotate:
+                self.imArr = np.flip(np.rot90(im.Arr, axes=(0,1)), axis=0)
+            else:
+                self.imArr = im.Arr 
+        except:
+            # if im is a numpy array
+            if len(im.shape) > 2:
+                # if im is a 3d numpy array
+                self.wl = np.arange(450, 450+100*im.shape[2], 100, dtype=float)
+                if self.rotate:
+                    self.imArr = np.flip(np.rot90(im, axes=(0,1)), axis=0)
+                else:
+                    self.imArr = im
+            else:
+                # if im is a single band image
+                self.wl = np.asarray(1)
+                if self.rotate:
+                    self.imArr = np.flip(np.rot90(im, axes=(0,1)), axis=0)
+                else:
+                    self.imArr = im 
         self.nrows = self.imArr.shape[0]
         self.ncols = self.imArr.shape[1]
         self.nbands = self.imArr.shape[2] 
@@ -395,14 +414,15 @@ class viewer(QMainWindow):
             self.ROI_table.removeRow(row)
             self.imROI = copy.deepcopy(self.imRGB)
             # color image by all ROI colors in the ROI table
-            for r in range(self.ROI_table.model().rowCount()):
-                ID_num = self.ROI_table.item(r, 3).text()
-                if self.ROI_dict[ID_num][x,y]:
-                    print(ID_num)
-                    roi_color = self.ROI_table.item(r, 1).background().color()
-                    self.imROI[x,y,0] = float(roi_color.red())/255
-                    self.imROI[x,y,1] = float(roi_color.green())/255
-                    self.imROI[x,y,2] = float(roi_color.blue())/255
+            # TO DO: Updated colors in the ROI image from ROIs
+            #for r in range(self.ROI_table.model().rowCount()):
+            #    ID_num = self.ROI_table.item(r, 3).text()
+            #    if self.ROI_dict[ID_num][x,y]:
+            #        print(ID_num)
+            #        roi_color = self.ROI_table.item(r, 1).background().color()
+            #        self.imROI[x,y,0] = float(roi_color.red())/255
+            #        self.imROI[x,y,1] = float(roi_color.green())/255
+            #        self.imROI[x,y,2] = float(roi_color.blue())/255
             # set the image viewer with the ROI image
             self.imv.setImage(self.imROI, autoRange=False)
             self.imv_imType = 'imROI'
@@ -456,8 +476,14 @@ class viewer(QMainWindow):
 
 
     def loadROIs(self):
+        print(self.roi_fname)
         # get filename to read
-        fname, extension = QFileDialog.getSaveFileName(self, "Choose ROI pickle file to load", "C:\\spectral_data\\spectral_images", "PKL (*.pkl)")
+        if self.roi_fname==None:
+            try:
+                self.roi_fname = im.filename[-3:]+'_rois.pkl'
+            except:                
+                self.roi_fname = 'C:\\Spectra_data\\Spectral_images'
+        fname, extension = QFileDialog.getSaveFileName(self, "Choose ROI pickle file to load", self.roi_fname, "PKL (*.pkl)")
         # return with no action if user selected "cancel" button
         if (len(fname)==0):
             return
@@ -491,8 +517,14 @@ class viewer(QMainWindow):
 
         
     def saveROIs(self):
+        print(self.roi_fname)
         # get output filename
-        fname, extension = QFileDialog.getSaveFileName(self, "Choose output name", "C:\\spectral_data\\spectral_images", "PKL (*.pkl)")
+        if self.roi_fname==None:
+            try:
+                self.roi_fname = im.filename[-3:]+'_rois.pkl'
+            except:                
+                self.roi_fname = 'C:\\Spectra_data\\Spectral_images'
+        fname, extension = QFileDialog.getSaveFileName(self, "Choose output name", self.roi_fname, "PKL (*.pkl)")
         # return with no action if user selected "cancel" button
         if (len(fname)==0):
             return
@@ -524,11 +556,16 @@ class viewer(QMainWindow):
                 # create an ROI dictionary
                 names.append(name)
                 colors[name] = color
-                masks[name] = self.ROI_dict[key],
+                if self.rotate:
+                    #self.imArr = np.flip(np.rot90(im, axes=(0,1)), axis=0)
+                    masks[name] = np.rot90( np.flip(np.squeeze(self.ROI_dict[key]), axis=0), k=3, axes=(0,1))
+                else:
+                    masks[name] = np.squeeze(self.ROI_dict[key])
         roi_df = pd.concat(dataFrames)
         rois = ROIs_class(names, colors, masks, roi_df)
         with open(fname, 'wb') as f:
             pickle.dump(rois, f)  
+        print(f'ROI file saved, {fname}')
 
     def ROI_table_selection_change(self):
         if len(self.ROI_table.selectedItems())==0:
