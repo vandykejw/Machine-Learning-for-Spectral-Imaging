@@ -1,0 +1,8 @@
+ipykernel
+numpy
+pandas
+matplotlib
+hyperspectral_gta_data
+spectral
+PyQt5
+pyqtgraph
