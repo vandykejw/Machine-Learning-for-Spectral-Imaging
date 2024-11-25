@@ -9,6 +9,7 @@ import spectral
 
 
 class viewer(QMainWindow):
+    # Simple viewer - input is an image structure and an optional stretch
     def __init__(self, im, stretch=[2,98]): 
         self.stretch = stretch
         self.wl = np.asarray(im.bands.centers)
@@ -88,6 +89,7 @@ class viewer(QMainWindow):
 
 
 class viewer_im_wl(QMainWindow):
+    # Simple viewer - input is an image array, wavelengths, and an optional stretch
     def __init__(self, imArr, wl, stretch=[2,98]): 
         self.stretch = stretch
         self.wl = wl
