@@ -194,7 +194,7 @@ class viewer(QMainWindow):
         
         # create the display window with the image
         self.imv_display_type = 'RGB'
-        self.show_RGB() 
+        self.setInitialRGB() 
         
         # Create a vertical layout area with the buttons layout with image layout below
         self.layout_main_im = QVBoxLayout()
@@ -226,7 +226,7 @@ class viewer(QMainWindow):
             self.h = 1200
             self.w = aspect_ratio*self.h
             
-    def show_RGB(self):              
+    def setInitialRGB(self):              
         # create and show an RGB image in the viewer         
         # determine the indices for the red, green, and blue bands
         self.index_red_band = np.argmin(np.abs(self.wl-650))
@@ -410,6 +410,7 @@ class viewer(QMainWindow):
     
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Delete:
+            self.remove_polygon()
             row = self.ROI_table.currentRow()
             self.ROI_table.removeRow(row)
             self.imROI = copy.deepcopy(self.imRGB)
@@ -627,17 +628,17 @@ class viewer(QMainWindow):
                     
                     # if left button was clicked
                     if event.button() == Qt.LeftButton:   
-                        # if the clicked pixel is not in the nummMask
+                        # if the clicked pixel is not in the nullMask
                         if self.nullMask[x,y]:
                             # add the new point to the ROI mask
                             self.ROI_dict[self.current_ROI_Id][x,y] = True
-                            # color the new point in the ROI image       
+                            # color the new point in the ROI image  
+                            self.imROI[x,y,0] = float(roi_color.red())/255
+                            self.imROI[x,y,1] = float(roi_color.green())/255
+                            self.imROI[x,y,2] = float(roi_color.blue())/255     
                             
                             # if the current image is the ROI image (RGB background) 
-                            if (self.imv_imType == 'imROI'):                
-                                self.imROI[x,y,0] = float(roi_color.red())/255
-                                self.imROI[x,y,1] = float(roi_color.green())/255
-                                self.imROI[x,y,2] = float(roi_color.blue())/255
+                            if (self.imv_imType == 'imROI'):         
                                 self.imv.setImage(self.imROI, autoRange=False)
                                 self.imv_imType = 'imROI'      
                                 
@@ -684,8 +685,7 @@ class viewer(QMainWindow):
                                 self.probs_RGB[x,y,1] = float(roi_color.green())/255
                                 self.probs_RGB[x,y,2] = float(roi_color.blue())/255
                                 self.imv.setImage(self.probs_RGB, autoRange=False)
-                                self.imv_imType = 'imPROBSroi'
-                                
+                                self.imv_imType = 'imPROBSroi'                                
                                 
                             # reset the number of points for the ROI in the table
                             item = QTableWidgetItem(str(np.sum(self.ROI_dict[self.current_ROI_Id])))
