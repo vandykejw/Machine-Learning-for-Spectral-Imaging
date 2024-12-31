@@ -13,6 +13,7 @@ class GaussianClassification():
         self.ncols = im.Arr.shape[1]
         self.nbands = im.Arr.shape[2]
 
+        im.List = np.reshape(im.Arr, (im.nrows*im.ncols, im.nbands))
         self.imList = im.List
         self.groundtruth_classes = {}
         self.class_names = []
@@ -69,7 +70,7 @@ class GaussianClassification():
                     self.groundtruth_classes[self.class_names[idx]]['locations'].append(loc)
 
         # Iterate throught the classes and color the ground truth image for each pixel in the ground truth:
-        self.gt_im = np.zeros((self.im.nrows,self.im.ncols))
+        self.gt_im = np.zeros((self.im.nrows,self.im.ncols), dtype=int)
         for key in self.groundtruth_classes.keys():
             print(f'Name: {key}')
             idx = self.groundtruth_classes[key]['classIndex']
