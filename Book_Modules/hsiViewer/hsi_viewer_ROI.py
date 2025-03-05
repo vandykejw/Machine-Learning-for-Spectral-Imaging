@@ -315,17 +315,20 @@ class viewer(QMainWindow):
         ROImeans = []
         ROIlocList = np.zeros(self.nrows*self.ncols)
         backgroundDataMask = (self.nullMaskList==1)
+        tracked_row_indices = []
         for i,item in enumerate(self.ROI_table.selectedItems()):
-            row = item.row()# get the row for the selected item
-            ROI_Id = self.ROI_table.item(row, 3).text()# get the ROI id for the selected ROI row
-            # get the mean spectrum
-            ROImask = self.ROI_dict[ROI_Id]
-            ROImaskList = np.reshape(ROImask, (self.nrows*self.ncols))
-            print(np.sum(ROImaskList))
-            backgroundDataMask = backgroundDataMask*(ROImaskList==0)
-            ROIlocList[ROImaskList>0] = i+1
-            print(np.unique(ROIlocList))
-            rows.append(row)
+            if item not in tracked_row_indices:
+                tracked_row_indices.append(item)
+                row = item.row()# get the row for the selected item
+                ROI_Id = self.ROI_table.item(row, 3).text()# get the ROI id for the selected ROI row
+                # get the mean spectrum
+                ROImask = self.ROI_dict[ROI_Id]
+                ROImaskList = np.reshape(ROImask, (self.nrows*self.ncols))
+                print(np.sum(ROImaskList))
+                backgroundDataMask = backgroundDataMask*(ROImaskList==0)
+                ROIlocList[ROImaskList>0] = i+1
+                print(np.unique(ROIlocList))
+                rows.append(row)
         # if the list of ROI locations has not changed since a previous computation of the 
         # deteciton probs, then do not recompute the probs
         try:
@@ -339,14 +342,19 @@ class viewer(QMainWindow):
             numPixTotal = ImData.shape[0]
             mnBk = np.mean(ImData, axis=0)
             covBk = numPixTotal*np.cov(ImData.T)
+            tracked_row_indices = []
             # compute mean and covariance for each ROI
             for i,row in enumerate(rows): 
-                color = self.ROI_table.item(row,1).background().color() # get the color 
-                rgb = [color.red(),color.green(),color.blue()]
-                ROIdata = self.imList[ROIlocList==i+1,:]
-                ROImeans.append(np.mean(ROIdata, axis=0))
-                covBk = covBk + ROIdata.shape[0]*np.cov(ROIdata.T)
-                numPixTotal = numPixTotal + ROIdata.shape[0]
+                if row not in tracked_row_indices:
+                    tracked_row_indices.append(row)
+                    color = self.ROI_table.item(row,1).background().color() # get the color 
+                    rgb = [color.red(),color.green(),color.blue()]
+                    ROIdata = self.imList[ROIlocList==i+1,:]
+                    ROImeans.append(np.mean(ROIdata, axis=0))
+                    covBk = covBk + ROIdata.shape[0]*np.cov(ROIdata.T)
+                    numPixTotal = numPixTotal + ROIdata.shape[0]
+                else:
+                    pass
             cov = covBk/numPixTotal
             self.ROIs_cov = cov
             self.ROImeans = ROImeans
